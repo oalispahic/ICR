@@ -1,0 +1,217 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 200 20% 94%;
+    --foreground: 220 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 15%;
+
+    --primary: 220 70% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 200 15% 88%;
+    --secondary-foreground: 220 25% 20%;
+
+    --muted: 200 12% 85%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 145 55% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 15% 88%;
+    --input: 0 0% 100%;
+    --ring: 220 70% 50%;
+
+    --radius: 1rem;
+
+    /* Custom tokens */
+    --icon-bg: 220 60% 55%;
+    --icon-foreground: 0 0% 100%;
+    --btn-signin: 220 60% 50%;
+    --btn-signin-foreground: 0 0% 100%;
+    --social-bg: 200 12% 90%;
+    --social-hover: 200 12% 82%;
+    --link-color: 220 70% 55%;
+    
+    /* Dashboard tokens */
+    --energy-gradient-start: 220 65% 50%;
+    --energy-gradient-end: 200 60% 55%;
+    --coral: 25 85% 55%;
+    --coral-foreground: 0 0% 100%;
+    --nav-active: 220 70% 50%;
+    
+    /* Status colors */
+    --success: 145 55% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 35 90% 55%;
+    --warning-foreground: 0 0% 100%;
+    
+    /* Device type colors */
+    --device-light: 45 90% 55%;
+    --device-climate: 220 70% 55%;
+    --device-entertainment: 280 60% 55%;
+    --device-appliance: 25 75% 55%;
+    
+    /* Chart colors */
+    --chart-1: 280 60% 55%;
+    --chart-2: 220 70% 55%;
+    --chart-3: 25 75% 55%;
+    --chart-4: 145 55% 45%;
+    --chart-5: 350 60% 55%;
+  }
+
+  .dark {
+    --background: 220 20% 8%;
+    --foreground: 200 15% 92%;
+
+    --card: 220 18% 12%;
+    --card-foreground: 200 15% 92%;
+
+    --popover: 220 18% 12%;
+    --popover-foreground: 200 15% 92%;
+
+    --primary: 220 65% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 200 15% 90%;
+
+    --muted: 220 12% 20%;
+    --muted-foreground: 200 10% 55%;
+
+    --accent: 145 50% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 20%;
+    --input: 220 18% 15%;
+    --ring: 220 65% 55%;
+
+    --icon-bg: 220 55% 50%;
+    --icon-foreground: 0 0% 100%;
+    --btn-signin: 220 55% 50%;
+    --btn-signin-foreground: 0 0% 100%;
+    --social-bg: 220 15% 18%;
+    --social-hover: 220 15% 25%;
+    --link-color: 220 60% 60%;
+    
+    /* Dashboard tokens */
+    --energy-gradient-start: 220 55% 45%;
+    --energy-gradient-end: 200 50% 50%;
+    --coral: 25 80% 50%;
+    --coral-foreground: 0 0% 100%;
+    --nav-active: 220 65% 55%;
+    
+    /* Status colors */
+    --success: 145 50% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 35 85% 50%;
+    --warning-foreground: 0 0% 100%;
+    
+    /* Device type colors */
+    --device-light: 45 85% 50%;
+    --device-climate: 220 65% 50%;
+    --device-entertainment: 280 55% 50%;
+    --device-appliance: 25 70% 50%;
+    
+    /* Chart colors */
+    --chart-1: 280 55% 50%;
+    --chart-2: 220 65% 50%;
+    --chart-3: 25 70% 50%;
+    --chart-4: 145 50% 42%;
+    --chart-5: 350 55% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer utilities {
+  .icon-box {
+    @apply flex items-center justify-center w-14 h-14 rounded-xl;
+    background: hsl(var(--icon-bg));
+    color: hsl(var(--icon-foreground));
+  }
+
+  .social-btn {
+    @apply flex items-center justify-center w-16 h-12 rounded-xl transition-all duration-200;
+    background: hsl(var(--social-bg));
+  }
+
+  .social-btn:hover {
+    background: hsl(var(--social-hover));
+    transform: translateY(-1px);
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-all duration-200;
+    background: hsl(var(--input));
+    border: 1px solid hsl(var(--border));
+  }
+
+  .input-field:focus {
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.15);
+  }
+
+  .btn-signin {
+    @apply w-full py-3 rounded-xl font-semibold text-sm uppercase tracking-wider transition-all duration-200;
+    background: hsl(var(--btn-signin));
+    color: hsl(var(--btn-signin-foreground));
+  }
+
+  .btn-signin:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+
+  .btn-signin:active {
+    transform: translateY(0);
+  }
+
+  .link-accent {
+    color: hsl(var(--link-color));
+  }
+
+  .link-accent:hover {
+    text-decoration: underline;
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--energy-gradient-start)) 0%, hsl(var(--energy-gradient-end)) 100%);
+  }
+  
+  .gradient-success {
+    background: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(160 50% 50%) 100%);
+  }
+
+  .card-shadow {
+    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.08), 0 4px 16px -4px rgba(0, 0, 0, 0.04);
+  }
+
+  .card-shadow-lg {
+    box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.1), 0 8px 24px -8px rgba(0, 0, 0, 0.06);
+  }
+}
