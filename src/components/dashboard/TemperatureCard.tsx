@@ -1,13 +1,15 @@
 import { Thermometer, Droplets, ChevronDown } from "lucide-react";
 import { useState } from "react";
-
-const rooms = ['Kitchen', 'Living Room', 'Bedroom', 'Office'];
+import { useDeviceContext } from "@/context/DeviceContext";
 
 export const TemperatureCard = () => {
-  const [selectedRoom, setSelectedRoom] = useState('Kitchen');
-  const [temperature] = useState(22);
-  const [humidity] = useState(55);
+  const { rooms } = useDeviceContext();
+  const [selectedRoomId, setSelectedRoomId] = useState(rooms[0]?.id || 'kitchen');
   const [showDropdown, setShowDropdown] = useState(false);
+
+  const selectedRoom = rooms.find(r => r.id === selectedRoomId) || rooms[0];
+  const temperature = selectedRoom?.temperature || 22;
+  const humidity = selectedRoom?.humidity || 45;
 
   return (
     <div className="bg-card rounded-2xl p-5 card-shadow">
@@ -45,24 +47,24 @@ export const TemperatureCard = () => {
             onClick={() => setShowDropdown(!showDropdown)}
             className="px-4 py-2 bg-secondary rounded-full text-sm text-foreground font-medium flex items-center gap-1"
           >
-            {selectedRoom}
+            {selectedRoom?.name || 'Select Room'}
             <ChevronDown className="w-4 h-4" />
           </button>
           
           {showDropdown && (
-            <div className="absolute right-0 top-full mt-2 bg-card rounded-xl shadow-lg border border-border overflow-hidden z-10">
+            <div className="absolute right-0 top-full mt-2 bg-card rounded-xl shadow-lg border border-border overflow-hidden z-10 min-w-[140px]">
               {rooms.map(room => (
                 <button
-                  key={room}
+                  key={room.id}
                   onClick={() => {
-                    setSelectedRoom(room);
+                    setSelectedRoomId(room.id);
                     setShowDropdown(false);
                   }}
                   className={`w-full px-4 py-2 text-left text-sm hover:bg-muted transition-colors ${
-                    selectedRoom === room ? 'text-primary font-medium' : 'text-foreground'
+                    selectedRoomId === room.id ? 'text-primary font-medium' : 'text-foreground'
                   }`}
                 >
-                  {room}
+                  {room.name}
                 </button>
               ))}
             </div>

@@ -4,15 +4,28 @@ import { LightsCard } from "@/components/dashboard/LightsCard";
 import { LockCard } from "@/components/dashboard/LockCard";
 import { BottomNav } from "@/components/dashboard/BottomNav";
 import { useState } from "react";
-import { X, Plus, Check } from "lucide-react";
+import { X, Plus, Check, Power } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { useDeviceContext } from "@/context/DeviceContext";
+import { Switch } from "@/components/ui/switch";
 
 type CardType = 'energy' | 'temperature' | 'lights' | 'lock' | 'climate' | 'security' | 'scenes';
+type DataType = 'energy' | 'temperature' | 'humidity' | 'lights' | 'security' | 'custom' | 'device';
 
 interface CardConfig {
   component: React.ReactNode;
@@ -21,10 +34,36 @@ interface CardConfig {
   available: boolean;
 }
 
+interface CustomCard {
+  id: string;
+  name: string;
+  dataType: DataType;
+  value: string;
+  deviceId?: string;
+  roomId?: string;
+}
+
+const dataTypeOptions: { value: DataType; label: string; unit: string }[] = [
+  { value: 'device', label: 'Device Control', unit: '' },
+  { value: 'energy', label: 'Energy Usage', unit: 'kWh' },
+  { value: 'temperature', label: 'Temperature', unit: '°C' },
+  { value: 'humidity', label: 'Humidity', unit: '%' },
+  { value: 'lights', label: 'Lights Status', unit: 'active' },
+  { value: 'security', label: 'Security Status', unit: '' },
+  { value: 'custom', label: 'Custom Value', unit: '' },
+];
+
 const Home = () => {
+  const { rooms, devices, toggleDevice, getDevicesByRoom } = useDeviceContext();
   const [isEditing, setIsEditing] = useState(false);
   const [showAddCards, setShowAddCards] = useState(false);
+  const [showCreateCard, setShowCreateCard] = useState(false);
   const [visibleCards, setVisibleCards] = useState<CardType[]>(['energy', 'temperature', 'lights', 'lock']);
+  const [customCards, setCustomCards] = useState<CustomCard[]>([]);
+  const [newCardName, setNewCardName] = useState('');
+  const [newCardDataType, setNewCardDataType] = useState<DataType>('device');
+  const [selectedRoomId, setSelectedRoomId] = useState<string>('');
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
 
   const toggleCard = (card: CardType) => {
     setVisibleCards(prev => 
@@ -32,6 +71,44 @@ const Home = () => {
         ? prev.filter(c => c !== card)
         : [...prev, card]
     );
+  };
+
+  const roomDevices = selectedRoomId ? getDevicesByRoom(selectedRoomId) : [];
+
+  const handleCreateCard = () => {
+    if (!newCardName.trim()) return;
+    
+    const newCard: CustomCard = {
+      id: `custom-${Date.now()}`,
+      name: newCardName,
+      dataType: newCardDataType,
+      value: getDefaultValue(newCardDataType),
+      deviceId: newCardDataType === 'device' ? selectedDeviceId : undefined,
+      roomId: newCardDataType === 'device' ? selectedRoomId : undefined,
+    };
+    
+    setCustomCards(prev => [...prev, newCard]);
+    setNewCardName('');
+    setNewCardDataType('device');
+    setSelectedRoomId('');
+    setSelectedDeviceId('');
+    setShowCreateCard(false);
+  };
+
+  const getDefaultValue = (type: DataType): string => {
+    switch (type) {
+      case 'energy': return '24.5';
+      case 'temperature': return '22';
+      case 'humidity': return '45';
+      case 'lights': return '3';
+      case 'security': return 'Armed';
+      case 'device': return '';
+      default: return '—';
+    }
+  };
+
+  const removeCustomCard = (id: string) => {
+    setCustomCards(prev => prev.filter(c => c.id !== id));
   };
 
   const cardComponents: Record<CardType, CardConfig> = {
@@ -44,10 +121,6 @@ const Home = () => {
     scenes: { component: null, label: 'Scenes', description: 'Quick automations', available: false },
   };
 
-  const availableToAdd = (Object.keys(cardComponents) as CardType[]).filter(
-    card => cardComponents[card].available && !visibleCards.includes(card)
-  );
-
   return (
     <div className="min-h-screen bg-background flex flex-col pb-24">
       <div className="px-5 pt-10 pb-3">
@@ -57,69 +130,30 @@ const Home = () => {
           <span className="text-base font-medium text-foreground">At a glance</span>
           <div className="flex items-center gap-2">
             <button 
-              onClick={() => setShowAddCards(true)}
+              onClick={() => setShowCreateCard(true)}
               className="w-8 h-8 rounded-full bg-card flex items-center justify-center card-shadow"
             >
               <Plus className="w-4 h-4 text-foreground" />
             </button>
             <button 
-              onClick={() => setIsEditing(!isEditing)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium card-shadow transition-colors ${
-                isEditing ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground'
-              }`}
+              onClick={() => setShowAddCards(true)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium card-shadow transition-colors bg-card text-foreground`}
             >
-              {isEditing ? 'Done' : 'Edit'}
+              Edit
             </button>
           </div>
         </div>
       </div>
 
-      {/* Edit Mode Panel */}
-      {isEditing && (
-        <div className="px-5 mb-3">
-          <div className="bg-card rounded-xl p-3 card-shadow">
-            <p className="text-sm text-muted-foreground mb-2">Visible cards:</p>
-            <div className="flex flex-wrap gap-2">
-              {visibleCards.map((card) => (
-                <button
-                  key={card}
-                  onClick={() => toggleCard(card)}
-                  className="px-3 py-1.5 rounded-full text-sm font-medium bg-primary text-primary-foreground flex items-center gap-1"
-                >
-                  {cardComponents[card].label}
-                  <X className="w-3 h-3" />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="flex-1 px-5 space-y-3">
         {visibleCards.includes('energy') && (
           <div className="relative">
-            {isEditing && (
-              <button
-                onClick={() => toggleCard('energy')}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center z-10"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
             <EnergyUsageCard />
           </div>
         )}
         
         {visibleCards.includes('temperature') && (
           <div className="relative">
-            {isEditing && (
-              <button
-                onClick={() => toggleCard('temperature')}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center z-10"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
             <TemperatureCard />
           </div>
         )}
@@ -127,53 +161,74 @@ const Home = () => {
         <div className="grid grid-cols-2 gap-3">
           {visibleCards.includes('lights') && (
             <div className="relative">
-              {isEditing && (
-                <button
-                  onClick={() => toggleCard('lights')}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center z-10"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
               <LightsCard />
             </div>
           )}
           {visibleCards.includes('lock') && (
             <div className="relative">
-              {isEditing && (
-                <button
-                  onClick={() => toggleCard('lock')}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center z-10"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
               <LockCard />
             </div>
           )}
         </div>
+
+        {/* Custom Cards */}
+        {customCards.length > 0 && (
+          <div className="grid grid-cols-2 gap-3">
+            {customCards.map((card) => {
+              const dataOption = dataTypeOptions.find(d => d.value === card.dataType);
+              const device = card.deviceId ? devices.find(d => d.id === card.deviceId) : null;
+              const room = card.roomId ? rooms.find(r => r.id === card.roomId) : null;
+              
+              return (
+                <div key={card.id} className="relative bg-card rounded-2xl p-4 card-shadow">
+                  {isEditing && (
+                    <button
+                      onClick={() => removeCustomCard(card.id)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center z-10"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                  
+                  {card.dataType === 'device' && device ? (
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">{room?.name}</p>
+                        <p className="text-sm font-semibold text-foreground">{device.name}</p>
+                      </div>
+                      <Switch
+                        checked={device.isOn}
+                        onCheckedChange={() => toggleDevice(device.id)}
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-xs text-muted-foreground mb-1">{card.name}</p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {card.value}
+                        <span className="text-sm font-normal text-muted-foreground ml-1">
+                          {dataOption?.unit}
+                        </span>
+                      </p>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Add Cards Dialog */}
+      {/* Edit Cards Dialog */}
       <Dialog open={showAddCards} onOpenChange={setShowAddCards}>
-        <DialogContent
-  className="
-    w-[92vw] 
-    max-w-[420px]
-    sm:max-w-md
-    p-4 sm:p-6
-    rounded-xl
-    bg-card 
-    border-border
-  "
->
+        <DialogContent className="sm:max-w-md bg-card border-border">
           <DialogHeader>
-            <DialogTitle>Add Dashboard Cards</DialogTitle>
+            <DialogTitle>Edit Dashboard Cards</DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-2 py-2 sm:space-y-3 sm:py-4">    
-          <p className="text-sm text-muted-foreground">
-              Select cards to add to your dashboard
+          <div className="space-y-3 py-4">
+            <p className="text-sm text-muted-foreground">
+              Toggle cards to show or hide on dashboard
             </p>
             
             {(Object.keys(cardComponents) as CardType[]).map((card) => {
@@ -211,6 +266,138 @@ const Home = () => {
                 </button>
               );
             })}
+
+            {/* Custom Cards Section */}
+            {customCards.length > 0 && (
+              <>
+                <div className="border-t border-border pt-3 mt-3">
+                  <p className="text-sm font-medium text-foreground mb-2">Custom Cards</p>
+                </div>
+                {customCards.map((card) => (
+                  <div
+                    key={card.id}
+                    className="w-full flex items-center justify-between p-3 rounded-xl bg-primary/10 border border-primary"
+                  >
+                    <div className="text-left">
+                      <p className="font-medium text-primary">{card.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {dataTypeOptions.find(d => d.value === card.dataType)?.label}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => removeCustomCard(card.id)}
+                      className="w-6 h-6 bg-destructive rounded-full flex items-center justify-center"
+                    >
+                      <X className="w-4 h-4 text-destructive-foreground" />
+                    </button>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Custom Card Dialog */}
+      <Dialog open={showCreateCard} onOpenChange={setShowCreateCard}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle>Create New Card</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="cardName">Card Name</Label>
+              <Input
+                id="cardName"
+                placeholder="e.g., Kitchen Light Switch"
+                value={newCardName}
+                onChange={(e) => setNewCardName(e.target.value)}
+                className="bg-muted border-border"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Card Type</Label>
+              <Select value={newCardDataType} onValueChange={(v) => {
+                setNewCardDataType(v as DataType);
+                setSelectedRoomId('');
+                setSelectedDeviceId('');
+              }}>
+                <SelectTrigger className="bg-muted border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {dataTypeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {newCardDataType === 'device' && (
+              <>
+                <div className="space-y-2">
+                  <Label>Select Room</Label>
+                  <Select value={selectedRoomId} onValueChange={(v) => {
+                    setSelectedRoomId(v);
+                    setSelectedDeviceId('');
+                  }}>
+                    <SelectTrigger className="bg-muted border-border">
+                      <SelectValue placeholder="Choose a room" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rooms.map((room) => (
+                        <SelectItem key={room.id} value={room.id}>
+                          {room.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedRoomId && (
+                  <div className="space-y-2">
+                    <Label>Select Device</Label>
+                    <Select value={selectedDeviceId} onValueChange={setSelectedDeviceId}>
+                      <SelectTrigger className="bg-muted border-border">
+                        <SelectValue placeholder="Choose a device" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roomDevices.map((device) => (
+                          <SelectItem key={device.id} value={device.id}>
+                            {device.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setShowCreateCard(false);
+                  setSelectedRoomId('');
+                  setSelectedDeviceId('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleCreateCard}
+                disabled={!newCardName.trim() || (newCardDataType === 'device' && !selectedDeviceId)}
+              >
+                Create Card
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
