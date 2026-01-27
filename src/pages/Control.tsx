@@ -44,12 +44,14 @@ const Control = () => {
             <h1 className="text-2xl font-semibold text-foreground">Control</h1>
             <p className="text-muted-foreground text-sm mt-0.5">Select a module</p>
           </div>
-          <button 
-            onClick={() => setShowCustomize(true)}
-            className="px-3 py-1.5 rounded-full text-sm font-medium card-shadow transition-colors bg-card text-foreground"
-          >
-            Edit
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setShowCustomize(true)}
+              className="px-3 py-1.5 rounded-full text-sm font-medium card-shadow transition-colors bg-card text-foreground"
+            >
+              Edit
+            </button>
+          </div>
         </div>
       </div>
 
