@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Plus, Lightbulb, Snowflake, Tv, Plug, 
-  Power, QrCode, Trash2, Music, Pause, Play,
+  QrCode, Trash2, Music, Pause, Play,
   Lamp, LampDesk, Fan, Flame, Speaker, Monitor, Wind, Coffee,
   Utensils, Waves, DoorOpen, BatteryCharging, PanelTop, Droplets, Thermometer,
   Check, Loader2
@@ -121,8 +121,7 @@ const RoomDetail = () => {
     appliance: Plug,
   };
 
-  // Get featured device (first on device or speaker)
-  const featuredDevice = devices.find(d => d.isOn && (d.type === 'light' || d.type === 'entertainment'));
+  // Get speaker device for "Now Playing"
   const speakerDevice = devices.find(d => d.type === 'entertainment' && d.nowPlaying);
 
   return (
@@ -151,49 +150,9 @@ const RoomDetail = () => {
 
       {/* Device Cards */}
       <div className="px-5 space-y-4">
-        {/* Featured Device Card */}
-        {featuredDevice && (
-          <div className="bg-card rounded-2xl p-4 card-shadow">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`w-2 h-2 rounded-full ${featuredDevice.connected !== false ? 'bg-accent' : 'bg-muted-foreground'}`} />
-                  <span className={`text-sm font-medium ${featuredDevice.connected !== false ? 'text-accent' : 'text-muted-foreground'}`}>
-                    {featuredDevice.connected !== false ? 'Connected' : 'Offline'}
-                  </span>
-                </div>
-                <h2 className="text-xl font-semibold text-foreground">{featuredDevice.name}</h2>
-                
-                <div className="flex items-center gap-2 mt-3">
-                  <button
-                    onClick={() => handleToggleDevice(featuredDevice.id)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-                      featuredDevice.isOn 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    }`}
-                  >
-                    <Power className="w-4 h-4" />
-                    {featuredDevice.isOn ? 'ON' : 'OFF'}
-                  </button>
-                </div>
-              </div>
-              
-              <div className={`w-20 h-20 rounded-xl flex items-center justify-center transition-colors ${
-                featuredDevice.isOn ? 'bg-primary/20' : 'bg-muted'
-              }`}>
-                {(() => {
-                  const Icon = getIcon(featuredDevice.icon);
-                  return <Icon className={`w-10 h-10 ${featuredDevice.isOn ? 'text-primary' : 'text-muted-foreground'}`} />;
-                })()}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Device Grid */}
+        {/* Device Grid - All devices in consistent grid */}
         <div className="grid grid-cols-2 gap-3">
-          {devices.filter(d => d.id !== featuredDevice?.id && d.id !== speakerDevice?.id).map((device) => {
+          {devices.filter(d => d.id !== speakerDevice?.id).map((device) => {
             const Icon = getIcon(device.icon);
             return (
               <div
