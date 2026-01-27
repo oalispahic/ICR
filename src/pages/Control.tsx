@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Flame, Lightbulb, Camera, BarChart3, Settings2 } from "lucide-react";
+import { Flame, Lightbulb, Camera, BarChart3 } from "lucide-react";
 import { BottomNav } from "@/components/dashboard/BottomNav";
 import { useNavigate } from "react-router-dom";
 import {
@@ -39,8 +39,18 @@ const Control = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col pb-24">
       <div className="px-5 pt-10 pb-4">
-        <h1 className="text-2xl font-semibold text-foreground">Control</h1>
-        <p className="text-muted-foreground text-sm mt-0.5">Select a module</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">Control</h1>
+            <p className="text-muted-foreground text-sm mt-0.5">Select a module</p>
+          </div>
+          <button 
+            onClick={() => setShowCustomize(true)}
+            className="px-3 py-1.5 rounded-full text-sm font-medium card-shadow transition-colors bg-card text-foreground"
+          >
+            Edit
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 px-5 space-y-3">
@@ -120,13 +130,6 @@ const Control = () => {
           </div>
         )}
 
-        <button 
-          onClick={() => setShowCustomize(true)}
-          className="w-full py-3 bg-primary text-primary-foreground rounded-2xl font-medium mt-4 flex items-center justify-center gap-2"
-        >
-          <Settings2 className="w-5 h-5" />
-          Customize page content
-        </button>
       </div>
 
       {/* Customize Dialog */}
